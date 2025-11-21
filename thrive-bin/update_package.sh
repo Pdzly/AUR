@@ -1,7 +1,6 @@
 git clone ssh://aur@aur.archlinux.org/thrive-bin.git || exit 1
 
 cp PKGBUILD thrive-bin
-cp thrive.sh thrive-bin
 
 cd thrive-bin || exit 1
 makepkg --printsrcinfo > .SRCINFO
