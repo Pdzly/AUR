@@ -22,7 +22,7 @@ options=(!strip)
 prepare() {
   mv "ThriveLauncher_${pkgver}_linux"/ThriveLauncher.desktop .
   mv "ThriveLauncher_${pkgver}_linux"/thrive-launcher-icon.png .
-  sed s,Exec=Thrive,Exec=/opt/thrivelauncher/ThriveLauncher, -i ThriveLauncher.desktop
+  sed s,Exec=ThriveLauncher,Exec=/opt/thrivelauncher/ThriveLauncher, -i ThriveLauncher.desktop
 }
 
 package() {
