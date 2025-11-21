@@ -3,7 +3,6 @@ set -e
 git clone ssh://aur@aur.archlinux.org/thrive-launcher-bin.git || exit 1
 
 cp PKGBUILD thrive-launcher-bin
-cp thrive-launcher.sh thrive-launcher-bin
 
 cd thrive-launcher-bin || exit 1
 makepkg --printsrcinfo > .SRCINFO || exit 1
