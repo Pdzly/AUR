@@ -1,10 +1,13 @@
 set -e
 
-git clone ssh://aur@aur.archlinux.org/standardnotes-desktop.git || exit 1
+git clone ssh://aur@aur.archlinux.org/balena-etcher.git balena|| exit 1
 
-cp PKGBUILD standardnotes-desktop
+cp PKGBUILD balena
+cp etcher-util balena
+cp skip-build-util.patch balena
+cp balena-etcher.desktop balena
 
-cd standardnotes-desktop || exit 1
+cd balena || exit 1
 makepkg --printsrcinfo > .SRCINFO
 
 current_version=$(grep "^pkgver=" PKGBUILD | cut -d'=' -f2)
@@ -17,5 +20,5 @@ git push
 
 cd ..
 
-rm -rf standardnotes-desktop
+rm -rf balena
 echo "Successfully published package to AUR with the version ${current_version} - ${current_pkgrel}"
