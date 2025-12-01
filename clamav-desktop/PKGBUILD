@@ -1,0 +1,49 @@
+# Maintainer: Rooki <aur at rooki dot xyz>
+# Contributor: Kainoa Kanter <kainoa@t1c.dev>
+# Based on:
+# - https://aur.archlinux.org/packages/anytype-electron-bin
+# - https://aur.archlinux.org/packages/element-desktop-nightly-bin
+
+pkgname=clamav-desktop
+pkgver=0.3.24
+pkgrel=1
+pkgdesc="Cross-platform Desktop GUI for ClamAV antivirus."
+arch=('x86_64')
+url="https://github.com/ivangabriele/clamav-desktop"
+license=('AGPL-3.0')
+depends=()
+makedepends=('nodejs>=22.0.0' npm yarn cargo make 'webkit2gtk-4.1' curl wget file openssl appmenu-gtk-module libappindicator-gtk3 librsvg xdotool)
+optdepends=()
+provides=('clamav-desktop')
+conflicts=()
+source=(
+	"https://github.com/ivangabriele/clamav-desktop/archive/refs/tags/v${pkgver}.zip")
+	
+sha256sums=('e2695fa6a2995e959d3aecc2c64f81d5b79fb1b48617b19b18361c8d785f11a0')
+
+
+prepare() {
+    cd "${srcdir}/clamav-desktop-${pkgver}"
+    export RUSTUP_TOOLCHAIN=stable
+}
+
+build() {
+    cd "${srcdir}/clamav-desktop-${pkgver}"
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    # yarn bundle:bin
+    yarn install
+    yarn add -D @tauri-apps/cli@latest
+    yarn tauri build --no-bundle
+}
+
+package() {
+    cd "${srcdir}/clamav-desktop-${pkgver}"
+    install -Dm644 "LICENSE.md" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+check() {
+    cd "${srcdir}/clamav-desktop-${pkgver}"
+    export RUSTUP_TOOLCHAIN=stable
+   # cargo test --frozen --all-features
+}
