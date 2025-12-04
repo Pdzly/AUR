@@ -1,0 +1,107 @@
+# Maintainer: Rooki <aur at rooki dot xyz>
+pkgname=lightkeeper
+pkgver=0.31.2
+pkgrel=1
+pkgdesc='LightkeeperRM (Remote Management) is a lightweight and modular drop-in replacement for maintaining servers over SSH.'
+arch=('x86_64')
+url="https://github.com/kalaksi/$pkgname"
+license=('GPL-3.0-or-later')
+source=(
+    "lightkeeper-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
+    "qmltermwidget::git+https://github.com/kalaksi/qmltermwidget.git"
+    "ChartJs2QML::git+https://github.com/kalaksi/ChartJs2QML.git"
+)
+sha256sums=(
+    '397b354302c490b12275d793cd6eca4ff2139f9da86f6e0136959a6cd34c7fcf'
+    'SKIP'
+    'SKIP'
+)
+
+# Runtime dependencies
+depends=(
+    'openssl'
+    'gcc-libs'
+    'liboping'
+    'dbus'
+    'qt6-base'
+    'qt6-svg'
+    'qt6-declarative'
+    'qt6-quickeffectmaker'
+    'qt6-charts'
+    'qt6-5compat'
+)
+
+makedepends=(
+    'git'
+    'cargo'
+    'clang'
+    'cmake'
+    'qt6-base'
+    'qt6-svg'
+    'qt6-declarative'
+    'qt6-quickeffectmaker'
+    'qt6-charts'
+    'qt6-5compat'
+)
+
+prepare() {
+    cd "${srcdir}/lightkeeper-${pkgver}"
+    
+    export RUSTUP_TOOLCHAIN=stable
+    export PKG_CONFIG_PATH="/usr/lib/qt6/pkgconfig:$PKG_CONFIG_PATH"
+    
+    rm -rf third_party
+    
+    # Link third-party dependencies
+    mkdir -p third_party
+    ln -sf "${srcdir}/qmltermwidget" third_party
+    ln -sf "${srcdir}/ChartJs2QML" third_party
+    
+    # Configure cargo for Qt6
+    mkdir -p .cargo
+    cat > .cargo/config.toml << 'EOF'
+[env]
+QMAKE = "/usr/lib/qt6/bin/qmake"
+EOF
+
+    # Fetch cargo dependencies
+    cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+    # Build qmltermwidget first
+    cd "${srcdir}/qmltermwidget"
+    /usr/lib/qt6/bin/qmake && make -j$(nproc)
+    
+    # Build lightkeeper
+    cd "${srcdir}/lightkeeper-${pkgver}"
+    
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    export QT_SELECT=6
+    export QMAKE="/usr/lib/qt6/bin/qmake"
+    export PKG_CONFIG_PATH="/usr/lib/qt6/pkgconfig:$PKG_CONFIG_PATH"
+    export CXXFLAGS="-I/usr/include/qt6"
+    export CFLAGS="-fPIC"
+    export QT_INCLUDE_PATH="/usr/include/qt6"
+    export QT_LIBRARY_PATH="/usr/lib"
+    
+    cargo build --release --locked
+}
+
+package() {
+    # Install qmltermwidget QML module
+    cd "${srcdir}/qmltermwidget"
+    make INSTALL_ROOT="${pkgdir}/usr" install
+    
+    # Install ChartJs2QML module
+    install -dm755 "${pkgdir}/usr/lib/qt6/qml/ChartJs2QML"
+    cp -a "${srcdir}/ChartJs2QML/"* "${pkgdir}/usr/lib/qt6/qml/ChartJs2QML/"
+    
+    # Install lightkeeper binary
+    cd "${srcdir}/lightkeeper-${pkgver}"
+    install -Dm755 "target/release/lightkeeper" "${pkgdir}/usr/bin/lightkeeper"
+    
+    # Install license
+    install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
