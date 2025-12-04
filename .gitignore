@@ -2,3 +2,6 @@
 *.7z
 *.rar
 *.zst
+src/
+pkg/
+*.deb
