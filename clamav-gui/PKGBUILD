@@ -1,3 +1,4 @@
+# Maintainer: Rooki <aur at rooki dot xyz>
 # Contributor: Calogero e Angelo Scarnà <info@codelinsoft.it>
 pkgname=clamav-gui
 _pkgname=ClamAV-GUI-QT6-1.1.8-1.2.src.rpm
